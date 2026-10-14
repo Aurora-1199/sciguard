@@ -1,0 +1,142 @@
+[
+  {
+    "id": "SG001-G1-01",
+    "group": "correct_flow",
+    "input": "from sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\nX_train, X_test = train_test_split(X, y)\nscaler = StandardScaler()\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)\nclf.fit(X_train, y_train)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "先 train_test_split，再在 X_train 上 fit_transform，流程正确；不应报警。"
+  },
+  {
+    "id": "SG001-G1-02",
+    "group": "correct_flow",
+    "input": "X_tr, X_te = train_test_split(X, y)\nX_tr = scaler.fit(X_tr)\nX_te = scaler.transform(X_te)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "fit 只作用于训练子集 X_tr，符合先划分再拟合；不应报警。"
+  },
+  {
+    "id": "SG001-G1-03",
+    "group": "correct_flow",
+    "input": "import sklearn.pipeline as pl\npipe = pl.make_pipeline(pl.StandardScaler(), pl.LogisticRegression())\npipe.fit(X_train, y_train)\npipe.score(X_test, y_test)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "使用 Pipeline 在训练集上 fit，是推荐做法；检查器只匹配裸 fit/fit_transform，不应报警。"
+  },
+  {
+    "id": "SG001-G1-04",
+    "group": "correct_flow",
+    "input": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "带参数的标准 split + 训练集拟合，正确流程；不应报警。"
+  },
+  {
+    "id": "SG001-G1-05",
+    "group": "correct_flow",
+    "input": "# fit on training split only\nX_train, _ = train_test_split(X, y)\nX_train = scaler.fit(X_train)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "注释在代码前，实际 fit 只作用于 X_train；不应报警。"
+  },
+  {
+    "id": "SG001-G2-01",
+    "group": "leak",
+    "input": "X_scaled = scaler.fit_transform(X)\nX_train, X_test = train_test_split(X_scaled)",
+    "expected": { "status": "POTENTIAL_RISK", "review_required": true, "findings": 1, "throws": false },
+    "rationale": "全量 X 先 fit_transform，再把结果 X_scaled 送入 split，典型泄漏；应检出。"
+  },
+  {
+    "id": "SG001-G2-02",
+    "group": "leak",
+    "input": "scaler.fit(X)\nX, y = train_test_split(X, y)",
+    "expected": { "status": "POTENTIAL_RISK", "review_required": true, "findings": 1, "throws": false },
+    "rationale": "先对全量 X 拟合，再 split 全量数据；应检出。"
+  },
+  {
+    "id": "SG001-G2-03",
+    "group": "leak",
+    "input": "X = scaler.fit_transform(X)\ntrain_test_split(X, y)",
+    "expected": { "status": "POTENTIAL_RISK", "review_required": true, "findings": 1, "throws": false },
+    "rationale": "fit_transform 回写同一变量 X，再 split；应检出。"
+  },
+  {
+    "id": "SG001-G2-04",
+    "group": "leak",
+    "input": "scaler.fit(\n X\n)\ntrain_test_split(\n X, y\n)",
+    "expected": { "status": "POTENTIAL_RISK", "review_required": true, "findings": 1, "throws": false },
+    "rationale": "多行展开的调用，检查器需支持跨行；应检出。"
+  },
+  {
+    "id": "SG001-G2-05",
+    "group": "leak",
+    "input": "X, y = scaler.fit_transform(X, y)\ntrain_test_split(X, y)",
+    "expected": { "status": "POTENTIAL_RISK", "review_required": true, "findings": 1, "throws": false },
+    "rationale": "解包赋值后 split；检查器按赋值目标识别 output，应检出。"
+  },
+  {
+    "id": "SG001-G3-01",
+    "group": "negative",
+    "input": "# scaler.fit(X)\ntrain_test_split(X)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "泄漏代码出现在注释中，检查器应忽略注释；不应报警。"
+  },
+  {
+    "id": "SG001-G3-02",
+    "group": "negative",
+    "input": "example = \"scaler.fit(X)\"\ntrain_test_split(X)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "示例代码被字符串字面量包裹，掩码后不参与匹配；不应报警。"
+  },
+  {
+    "id": "SG001-G3-03",
+    "group": "negative",
+    "input": "\"\"\"scaler.fit(X)\ntrain_test_split(X)\"\"\"",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "docstring 内的示例，掩码后不匹配；不应报警。"
+  },
+  {
+    "id": "SG001-G3-04",
+    "group": "negative",
+    "input": "scaler.fit(A)\ntrain_test_split(B)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "fit(A) 与 split(B) 涉及互不相关的数据集，检查器按变量名判定不构成泄漏；不应报警。"
+  },
+  {
+    "id": "SG001-G3-05",
+    "group": "negative",
+    "input": "train_test_split(X, y)\nscaler.fit(X_train)",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": false, "findings": 0, "throws": false },
+    "rationale": "split 在前，fit 只作用于 X_train；顺序正确，不应报警。"
+  },
+  {
+    "id": "SG001-G4-01",
+    "group": "abnormal",
+    "input": "",
+    "expected": { "status": null, "review_required": null, "findings": null, "throws": true, "throwsType": "TypeError" },
+    "rationale": "空字符串被明确拒绝，应抛 TypeError（抛错类异常）。"
+  },
+  {
+    "id": "SG001-G4-02",
+    "group": "abnormal",
+    "input": "   \n  ",
+    "expected": { "status": null, "review_required": null, "findings": null, "throws": true, "throwsType": "TypeError" },
+    "rationale": "纯空白文本视为空输入，应抛 TypeError（抛错类异常）。"
+  },
+  {
+    "id": "SG001-G4-03",
+    "group": "abnormal",
+    "input": 42,
+    "expected": { "status": null, "review_required": null, "findings": null, "throws": true, "throwsType": "TypeError" },
+    "rationale": "非字符串输入应抛 TypeError（抛错类异常）。"
+  },
+  {
+    "id": "SG001-G4-04",
+    "group": "abnormal",
+    "input": "__REPEAT_X_32769__",
+    "expected": { "status": null, "review_required": null, "findings": null, "throws": true, "throwsType": "TypeError" },
+    "rationale": "超过 32768 字符上限，应抛 TypeError（抛错类异常）。"
+  },
+  {
+    "id": "SG001-G4-05",
+    "group": "abnormal",
+    "input": "example = \"unfinished",
+    "expected": { "status": "NO_PATTERN_FOUND", "review_required": true, "findings": 0, "throws": false },
+    "rationale": "未闭合字符串不抛错，返回 review_required=true 提示需人工复核（复核类异常）。"
+  }
+]

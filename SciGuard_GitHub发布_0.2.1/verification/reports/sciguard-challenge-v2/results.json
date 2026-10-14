@@ -1,0 +1,709 @@
+{
+  "generator": "SciGuard SG001 challenge-v2 before/after benchmark",
+  "checkers": [
+    {
+      "key": "legacy",
+      "version": "0.2.0-legacy",
+      "binary_denominator": 7,
+      "total": 10,
+      "tp": 2,
+      "fn": 1,
+      "fp": 0,
+      "tn": 4,
+      "check_error": 0,
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "accuracy": 0.8571428571428571
+    },
+    {
+      "key": "improved",
+      "version": "0.2.1",
+      "binary_denominator": 7,
+      "total": 10,
+      "tp": 3,
+      "fn": 0,
+      "fp": 0,
+      "tn": 4,
+      "check_error": 0,
+      "precision": 1,
+      "recall": 1,
+      "accuracy": 1
+    }
+  ],
+  "needs_review": [
+    {
+      "id": "CH-06-v2",
+      "group": "conditional_branch"
+    },
+    {
+      "id": "CH-07-v2",
+      "group": "cross_function_flow"
+    },
+    {
+      "id": "CH-08-v2",
+      "group": "cross_function_flow"
+    }
+  ],
+  "results": [
+    {
+      "key": "legacy",
+      "name": "legacy (0.2.0, pre-improvement checkpoint)",
+      "version": "0.2.0-legacy",
+      "total": 10,
+      "binary_denominator": 7,
+      "excluded_needs_review": 3,
+      "tp": 2,
+      "fn": 1,
+      "fp": 0,
+      "tn": 4,
+      "check_error": 0,
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "accuracy": 0.8571428571428571,
+      "results": [
+        {
+          "id": "CH-01-v2",
+          "group": "import_alias",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "from sklearn.preprocessing import StandardScaler as SS\nfrom sklearn.model_selection import train_test_split as tps\nX_train, X_test, y_train, y_test = tps(X, y)\nX_train = SS().fit_transform(X_train)\nX_test = SS().transform(X_test)",
+          "rationale": "导入别名修正版：split 正确接收四个返回值；fit_transform 只作用于 X_train，split 在前，流程正确。即使别名不同，不应报警。",
+          "notes": "原 CH-01 的代码缺少 y 的拆分；修正后 split 接收四个返回值，标签只表示无明确泄漏风险，不表示整段程序完整正确。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "clean"
+        },
+        {
+          "id": "CH-02-v2",
+          "group": "import_alias",
+          "label": {
+            "leaks": true
+          },
+          "needs_review": false,
+          "input": "import sklearn.model_selection as ms\nimport sklearn.preprocessing as pp\nX_scaled = pp.StandardScaler().fit_transform(X)\nX_train, X_test, y_train, y_test = ms.train_test_split(X_scaled, y, test_size=0.2, random_state=42)\nX_train = pp.StandardScaler().fit_transform(X_train)",
+          "rationale": "导入别名修正版（本次改进目标）：pp.StandardScaler().fit_transform(X) 作用于全量 X，再把 X_scaled 送入 ms.train_test_split，典型泄漏；split 修正为四个返回值；后续在 X_train 上重新 fit 属于次要不规范但不改变明确泄漏判定，不应因此误报成无泄漏。应检出第 3-4 行的泄漏。",
+          "notes": "对检查器的验证：module-qualified 的 StandardScaler().fit_transform 构造链 + module-qualified split 都要识别；行号与证据需保留。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "missed"
+        },
+        {
+          "id": "CH-03-v2",
+          "group": "variable_reassignment",
+          "label": {
+            "leaks": true
+          },
+          "needs_review": false,
+          "input": "X, y = load_data()\nX = scaler.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",
+          "rationale": "变量重赋值修正版：split 改为四个返回值；X 被 fit_transform 覆盖后回写同一变量，再 split；应检出。",
+          "notes": "原 CH-03 的 split 只接两个返回值；修正后语义不变。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "POTENTIAL_RISK",
+            "review_required": true,
+            "findings": 1,
+            "first_finding": {
+              "rule_id": "SG001",
+              "severity": "HIGH",
+              "title": "Potential preprocessing data leakage",
+              "fit_line": 2,
+              "split_line": 3,
+              "dataset": "X",
+              "split_input": "X",
+              "evidence": "scaler.fit_transform(X) appears before train_test_split(X)",
+              "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+            },
+            "version": "0.2.0-legacy"
+          },
+          "classification": "detected"
+        },
+        {
+          "id": "CH-04-v2",
+          "group": "variable_reassignment",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)\nX_train = X_train[X_train != 0.0]",
+          "rationale": "变量重赋值修正版：先 split 再在 X_train 上 fit_transform，随后过滤零值重赋值；流程正确，不应报警。",
+          "notes": "原 CH-04 的 split 缺少 y 拆分；修正为四个返回值。标签只表示无明确泄漏风险。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "clean"
+        },
+        {
+          "id": "CH-05-v2",
+          "group": "conditional_branch",
+          "label": {
+            "leaks": true
+          },
+          "needs_review": false,
+          "input": "if use_scaler:\n    X_scaled = scaler.fit_transform(X)\n    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2)\nelse:\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+          "rationale": "条件分支修正版：if 分支内 fit_transform 全量 X 再 split X_scaled；检查器按直线性（假设全路径）可检出该泄漏，两个分支的 split 均为四个返回值。",
+          "notes": "原 CH-05 的 split 缺少 y 拆分；修正后不变。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "POTENTIAL_RISK",
+            "review_required": true,
+            "findings": 2,
+            "first_finding": {
+              "rule_id": "SG001",
+              "severity": "HIGH",
+              "title": "Potential preprocessing data leakage",
+              "fit_line": 2,
+              "split_line": 3,
+              "dataset": "X",
+              "split_input": "X_scaled",
+              "evidence": "scaler.fit_transform(X) appears before train_test_split(X_scaled)",
+              "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+            },
+            "version": "0.2.0-legacy"
+          },
+          "classification": "detected"
+        },
+        {
+          "id": "CH-06-v2",
+          "group": "conditional_branch",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "if use_pipeline:\n    pipe = make_pipeline(StandardScaler(), LogisticRegression())\n    pipe.fit(X_train, y_train)\nelse:\n    scaler = StandardScaler()\n    scaler.fit(X_train)\n    scaler.transform(X_test)\n    model.fit(X_train, y_train)",
+          "rationale": "条件分支修正版：两个分支都只在 X_train 上 fit，且不在测试集上重新 fit；表面看无泄漏。但检查器是纯文本直线性分析，无法确定 if/else 之外是否已完成 split，X_train 的来源不可判定，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-06 标签 no_leak 的依据无法由检查器独立判定，v2 改判为 needs_review。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-07-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(raw, y):\n    out = scaler.fit_transform(raw)\n    return out, y\n\nX_full, y_full = load_data()\nX = preprocess(X_full, y_full)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+          "rationale": "跨函数数据流修正版：函数内 fit_transform 作用于参数 raw，返回值再 split；X_full 是否全量数据无法从函数内文本判定，且检查器明确不声称支持跨函数数据流，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-07 标签 leak=true 超出当前检查器能力边界，v2 改判为 needs_review；不再声称跨函数数据流已支持。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-08-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(train):\n    return StandardScaler().fit_transform(train)\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nX_train = preprocess(X_train)\nX_test = preprocess(X_test)",
+          "rationale": "跨函数数据流修正版：调用点传入 X_train/X_test，检查器可确认没有在测试集上重新 fit 的显式泄漏；但函数体是否只处理传入子集需阅读函数内代码判定，属于跨函数边界，标为需复核，单独统计。",
+          "notes": "v2 不再把跨函数案例直接标 leak=true/no_leak。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-09-v2",
+          "group": "similar_no_alarm",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nscaler = StandardScaler()\nX_train_scaled = scaler.fit(X_train)\nX_test_scaled = scaler.transform(X_test)\nclf.fit(X_train_scaled, y_train)\nclf.score(X_test_scaled, y_test)",
+          "rationale": "相似代码不应报警修正版：fit 和 transform 都作用于 split 后的子集，且 clf.fit/clf.score 与 scaler.fit 形式相似但语义不同；不应报警。",
+          "notes": "原 CH-09 的 split 缺少 y 拆分；修正为四个返回值。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "clean"
+        },
+        {
+          "id": "CH-10-v2",
+          "group": "similar_no_alarm",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "# The following is a commented-out example of a leak:\n# X_scaled = StandardScaler().fit_transform(X)\n# X_train, X_test, y_train, y_test = train_test_split(X_scaled, y)\n# Correct approach:\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nX_train = StandardScaler().fit_transform(X_train)\nX_test = StandardScaler().fit_transform(X_test)",
+          "rationale": "注释中的泄漏代码 + 实际正确的流程修正版：注释与 docstring 已被掩码，实际代码先 split 再在 X_train 上 fit，后续 X_test 只 transform，不在测试集上重新 fit；不应报警。",
+          "notes": "原 CH-10 注释内示例同步改为构造链形式，用于验证掩码对 pp. 前缀文本同样生效。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "clean"
+        }
+      ],
+      "needs_review_cases": [
+        {
+          "id": "CH-06-v2",
+          "group": "conditional_branch",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "if use_pipeline:\n    pipe = make_pipeline(StandardScaler(), LogisticRegression())\n    pipe.fit(X_train, y_train)\nelse:\n    scaler = StandardScaler()\n    scaler.fit(X_train)\n    scaler.transform(X_test)\n    model.fit(X_train, y_train)",
+          "rationale": "条件分支修正版：两个分支都只在 X_train 上 fit，且不在测试集上重新 fit；表面看无泄漏。但检查器是纯文本直线性分析，无法确定 if/else 之外是否已完成 split，X_train 的来源不可判定，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-06 标签 no_leak 的依据无法由检查器独立判定，v2 改判为 needs_review。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-07-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(raw, y):\n    out = scaler.fit_transform(raw)\n    return out, y\n\nX_full, y_full = load_data()\nX = preprocess(X_full, y_full)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+          "rationale": "跨函数数据流修正版：函数内 fit_transform 作用于参数 raw，返回值再 split；X_full 是否全量数据无法从函数内文本判定，且检查器明确不声称支持跨函数数据流，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-07 标签 leak=true 超出当前检查器能力边界，v2 改判为 needs_review；不再声称跨函数数据流已支持。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-08-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(train):\n    return StandardScaler().fit_transform(train)\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nX_train = preprocess(X_train)\nX_test = preprocess(X_test)",
+          "rationale": "跨函数数据流修正版：调用点传入 X_train/X_test，检查器可确认没有在测试集上重新 fit 的显式泄漏；但函数体是否只处理传入子集需阅读函数内代码判定，属于跨函数边界，标为需复核，单独统计。",
+          "notes": "v2 不再把跨函数案例直接标 leak=true/no_leak。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "needs_review"
+        }
+      ],
+      "failing": [
+        {
+          "id": "CH-02-v2",
+          "group": "import_alias",
+          "label": {
+            "leaks": true
+          },
+          "needs_review": false,
+          "input": "import sklearn.model_selection as ms\nimport sklearn.preprocessing as pp\nX_scaled = pp.StandardScaler().fit_transform(X)\nX_train, X_test, y_train, y_test = ms.train_test_split(X_scaled, y, test_size=0.2, random_state=42)\nX_train = pp.StandardScaler().fit_transform(X_train)",
+          "rationale": "导入别名修正版（本次改进目标）：pp.StandardScaler().fit_transform(X) 作用于全量 X，再把 X_scaled 送入 ms.train_test_split，典型泄漏；split 修正为四个返回值；后续在 X_train 上重新 fit 属于次要不规范但不改变明确泄漏判定，不应因此误报成无泄漏。应检出第 3-4 行的泄漏。",
+          "notes": "对检查器的验证：module-qualified 的 StandardScaler().fit_transform 构造链 + module-qualified split 都要识别；行号与证据需保留。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.0-legacy"
+          },
+          "classification": "missed"
+        }
+      ]
+    },
+    {
+      "key": "improved",
+      "name": "improved (live checkScientificCode)",
+      "version": "0.2.1",
+      "total": 10,
+      "binary_denominator": 7,
+      "excluded_needs_review": 3,
+      "tp": 3,
+      "fn": 0,
+      "fp": 0,
+      "tn": 4,
+      "check_error": 0,
+      "precision": 1,
+      "recall": 1,
+      "accuracy": 1,
+      "results": [
+        {
+          "id": "CH-01-v2",
+          "group": "import_alias",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "from sklearn.preprocessing import StandardScaler as SS\nfrom sklearn.model_selection import train_test_split as tps\nX_train, X_test, y_train, y_test = tps(X, y)\nX_train = SS().fit_transform(X_train)\nX_test = SS().transform(X_test)",
+          "rationale": "导入别名修正版：split 正确接收四个返回值；fit_transform 只作用于 X_train，split 在前，流程正确。即使别名不同，不应报警。",
+          "notes": "原 CH-01 的代码缺少 y 的拆分；修正后 split 接收四个返回值，标签只表示无明确泄漏风险，不表示整段程序完整正确。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "clean"
+        },
+        {
+          "id": "CH-02-v2",
+          "group": "import_alias",
+          "label": {
+            "leaks": true
+          },
+          "needs_review": false,
+          "input": "import sklearn.model_selection as ms\nimport sklearn.preprocessing as pp\nX_scaled = pp.StandardScaler().fit_transform(X)\nX_train, X_test, y_train, y_test = ms.train_test_split(X_scaled, y, test_size=0.2, random_state=42)\nX_train = pp.StandardScaler().fit_transform(X_train)",
+          "rationale": "导入别名修正版（本次改进目标）：pp.StandardScaler().fit_transform(X) 作用于全量 X，再把 X_scaled 送入 ms.train_test_split，典型泄漏；split 修正为四个返回值；后续在 X_train 上重新 fit 属于次要不规范但不改变明确泄漏判定，不应因此误报成无泄漏。应检出第 3-4 行的泄漏。",
+          "notes": "对检查器的验证：module-qualified 的 StandardScaler().fit_transform 构造链 + module-qualified split 都要识别；行号与证据需保留。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "POTENTIAL_RISK",
+            "review_required": true,
+            "findings": 1,
+            "first_finding": {
+              "rule_id": "SG001",
+              "severity": "HIGH",
+              "title": "Potential preprocessing data leakage",
+              "fit_line": 3,
+              "split_line": 4,
+              "dataset": "X",
+              "split_input": "X_scaled",
+              "evidence": "StandardScaler.fit_transform(X) appears before train_test_split(X_scaled)",
+              "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+            },
+            "version": "0.2.1"
+          },
+          "classification": "detected"
+        },
+        {
+          "id": "CH-03-v2",
+          "group": "variable_reassignment",
+          "label": {
+            "leaks": true
+          },
+          "needs_review": false,
+          "input": "X, y = load_data()\nX = scaler.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",
+          "rationale": "变量重赋值修正版：split 改为四个返回值；X 被 fit_transform 覆盖后回写同一变量，再 split；应检出。",
+          "notes": "原 CH-03 的 split 只接两个返回值；修正后语义不变。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "POTENTIAL_RISK",
+            "review_required": true,
+            "findings": 1,
+            "first_finding": {
+              "rule_id": "SG001",
+              "severity": "HIGH",
+              "title": "Potential preprocessing data leakage",
+              "fit_line": 2,
+              "split_line": 3,
+              "dataset": "X",
+              "split_input": "X",
+              "evidence": "scaler.fit_transform(X) appears before train_test_split(X)",
+              "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+            },
+            "version": "0.2.1"
+          },
+          "classification": "detected"
+        },
+        {
+          "id": "CH-04-v2",
+          "group": "variable_reassignment",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)\nX_train = X_train[X_train != 0.0]",
+          "rationale": "变量重赋值修正版：先 split 再在 X_train 上 fit_transform，随后过滤零值重赋值；流程正确，不应报警。",
+          "notes": "原 CH-04 的 split 缺少 y 拆分；修正为四个返回值。标签只表示无明确泄漏风险。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "clean"
+        },
+        {
+          "id": "CH-05-v2",
+          "group": "conditional_branch",
+          "label": {
+            "leaks": true
+          },
+          "needs_review": false,
+          "input": "if use_scaler:\n    X_scaled = scaler.fit_transform(X)\n    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2)\nelse:\n    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+          "rationale": "条件分支修正版：if 分支内 fit_transform 全量 X 再 split X_scaled；检查器按直线性（假设全路径）可检出该泄漏，两个分支的 split 均为四个返回值。",
+          "notes": "原 CH-05 的 split 缺少 y 拆分；修正后不变。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "POTENTIAL_RISK",
+            "review_required": true,
+            "findings": 2,
+            "first_finding": {
+              "rule_id": "SG001",
+              "severity": "HIGH",
+              "title": "Potential preprocessing data leakage",
+              "fit_line": 2,
+              "split_line": 3,
+              "dataset": "X",
+              "split_input": "X_scaled",
+              "evidence": "scaler.fit_transform(X) appears before train_test_split(X_scaled)",
+              "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+            },
+            "version": "0.2.1"
+          },
+          "classification": "detected"
+        },
+        {
+          "id": "CH-06-v2",
+          "group": "conditional_branch",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "if use_pipeline:\n    pipe = make_pipeline(StandardScaler(), LogisticRegression())\n    pipe.fit(X_train, y_train)\nelse:\n    scaler = StandardScaler()\n    scaler.fit(X_train)\n    scaler.transform(X_test)\n    model.fit(X_train, y_train)",
+          "rationale": "条件分支修正版：两个分支都只在 X_train 上 fit，且不在测试集上重新 fit；表面看无泄漏。但检查器是纯文本直线性分析，无法确定 if/else 之外是否已完成 split，X_train 的来源不可判定，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-06 标签 no_leak 的依据无法由检查器独立判定，v2 改判为 needs_review。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-07-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(raw, y):\n    out = scaler.fit_transform(raw)\n    return out, y\n\nX_full, y_full = load_data()\nX = preprocess(X_full, y_full)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+          "rationale": "跨函数数据流修正版：函数内 fit_transform 作用于参数 raw，返回值再 split；X_full 是否全量数据无法从函数内文本判定，且检查器明确不声称支持跨函数数据流，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-07 标签 leak=true 超出当前检查器能力边界，v2 改判为 needs_review；不再声称跨函数数据流已支持。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-08-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(train):\n    return StandardScaler().fit_transform(train)\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nX_train = preprocess(X_train)\nX_test = preprocess(X_test)",
+          "rationale": "跨函数数据流修正版：调用点传入 X_train/X_test，检查器可确认没有在测试集上重新 fit 的显式泄漏；但函数体是否只处理传入子集需阅读函数内代码判定，属于跨函数边界，标为需复核，单独统计。",
+          "notes": "v2 不再把跨函数案例直接标 leak=true/no_leak。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-09-v2",
+          "group": "similar_no_alarm",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nscaler = StandardScaler()\nX_train_scaled = scaler.fit(X_train)\nX_test_scaled = scaler.transform(X_test)\nclf.fit(X_train_scaled, y_train)\nclf.score(X_test_scaled, y_test)",
+          "rationale": "相似代码不应报警修正版：fit 和 transform 都作用于 split 后的子集，且 clf.fit/clf.score 与 scaler.fit 形式相似但语义不同；不应报警。",
+          "notes": "原 CH-09 的 split 缺少 y 拆分；修正为四个返回值。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "clean"
+        },
+        {
+          "id": "CH-10-v2",
+          "group": "similar_no_alarm",
+          "label": {
+            "leaks": false
+          },
+          "needs_review": false,
+          "input": "# The following is a commented-out example of a leak:\n# X_scaled = StandardScaler().fit_transform(X)\n# X_train, X_test, y_train, y_test = train_test_split(X_scaled, y)\n# Correct approach:\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nX_train = StandardScaler().fit_transform(X_train)\nX_test = StandardScaler().fit_transform(X_test)",
+          "rationale": "注释中的泄漏代码 + 实际正确的流程修正版：注释与 docstring 已被掩码，实际代码先 split 再在 X_train 上 fit，后续 X_test 只 transform，不在测试集上重新 fit；不应报警。",
+          "notes": "原 CH-10 注释内示例同步改为构造链形式，用于验证掩码对 pp. 前缀文本同样生效。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "clean"
+        }
+      ],
+      "needs_review_cases": [
+        {
+          "id": "CH-06-v2",
+          "group": "conditional_branch",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "if use_pipeline:\n    pipe = make_pipeline(StandardScaler(), LogisticRegression())\n    pipe.fit(X_train, y_train)\nelse:\n    scaler = StandardScaler()\n    scaler.fit(X_train)\n    scaler.transform(X_test)\n    model.fit(X_train, y_train)",
+          "rationale": "条件分支修正版：两个分支都只在 X_train 上 fit，且不在测试集上重新 fit；表面看无泄漏。但检查器是纯文本直线性分析，无法确定 if/else 之外是否已完成 split，X_train 的来源不可判定，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-06 标签 no_leak 的依据无法由检查器独立判定，v2 改判为 needs_review。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-07-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(raw, y):\n    out = scaler.fit_transform(raw)\n    return out, y\n\nX_full, y_full = load_data()\nX = preprocess(X_full, y_full)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+          "rationale": "跨函数数据流修正版：函数内 fit_transform 作用于参数 raw，返回值再 split；X_full 是否全量数据无法从函数内文本判定，且检查器明确不声称支持跨函数数据流，故标为需复核，排除出二分类指标，单独统计。",
+          "notes": "原 CH-07 标签 leak=true 超出当前检查器能力边界，v2 改判为 needs_review；不再声称跨函数数据流已支持。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "needs_review"
+        },
+        {
+          "id": "CH-08-v2",
+          "group": "cross_function_flow",
+          "label": {
+            "leaks": null
+          },
+          "needs_review": true,
+          "input": "def preprocess(train):\n    return StandardScaler().fit_transform(train)\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)\nX_train = preprocess(X_train)\nX_test = preprocess(X_test)",
+          "rationale": "跨函数数据流修正版：调用点传入 X_train/X_test，检查器可确认没有在测试集上重新 fit 的显式泄漏；但函数体是否只处理传入子集需阅读函数内代码判定，属于跨函数边界，标为需复核，单独统计。",
+          "notes": "v2 不再把跨函数案例直接标 leak=true/no_leak。",
+          "actual": {
+            "threw": false,
+            "throwType": null,
+            "status": "NO_PATTERN_FOUND",
+            "review_required": false,
+            "findings": 0,
+            "first_finding": null,
+            "version": "0.2.1"
+          },
+          "classification": "needs_review"
+        }
+      ],
+      "failing": []
+    }
+  ]
+}

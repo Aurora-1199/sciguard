@@ -1,0 +1,740 @@
+{
+  "generator": "SciGuard SG001 local benchmark",
+  "checker_version": "0.2.1",
+  "total": 20,
+  "passed": 20,
+  "failed": 0,
+  "cases": [
+    {
+      "id": "SG001-G1-01",
+      "group": "correct_flow",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "先 train_test_split，再在 X_train 上 fit_transform，流程正确；不应报警。"
+    },
+    {
+      "id": "SG001-G1-02",
+      "group": "correct_flow",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "fit 只作用于训练子集 X_tr，符合先划分再拟合；不应报警。"
+    },
+    {
+      "id": "SG001-G1-03",
+      "group": "correct_flow",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "使用 Pipeline 在训练集上 fit，是推荐做法；检查器只匹配裸 fit/fit_transform，不应报警。"
+    },
+    {
+      "id": "SG001-G1-04",
+      "group": "correct_flow",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "带参数的标准 split + 训练集拟合，正确流程；不应报警。"
+    },
+    {
+      "id": "SG001-G1-05",
+      "group": "correct_flow",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "注释在代码前，实际 fit 只作用于 X_train；不应报警。"
+    },
+    {
+      "id": "SG001-G2-01",
+      "group": "leak",
+      "expected": {
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "throws": false
+      },
+      "expected_status": "POTENTIAL_RISK",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "first_finding": {
+          "rule_id": "SG001",
+          "severity": "HIGH",
+          "title": "Potential preprocessing data leakage",
+          "fit_line": 1,
+          "split_line": 2,
+          "dataset": "X",
+          "split_input": "X_scaled",
+          "evidence": "scaler.fit_transform(X) appears before train_test_split(X_scaled)",
+          "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+        },
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "全量 X 先 fit_transform，再把结果 X_scaled 送入 split，典型泄漏；应检出。"
+    },
+    {
+      "id": "SG001-G2-02",
+      "group": "leak",
+      "expected": {
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "throws": false
+      },
+      "expected_status": "POTENTIAL_RISK",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "first_finding": {
+          "rule_id": "SG001",
+          "severity": "HIGH",
+          "title": "Potential preprocessing data leakage",
+          "fit_line": 1,
+          "split_line": 2,
+          "dataset": "X",
+          "split_input": "X",
+          "evidence": "scaler.fit(X) appears before train_test_split(X)",
+          "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+        },
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "先对全量 X 拟合，再 split 全量数据；应检出。"
+    },
+    {
+      "id": "SG001-G2-03",
+      "group": "leak",
+      "expected": {
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "throws": false
+      },
+      "expected_status": "POTENTIAL_RISK",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "first_finding": {
+          "rule_id": "SG001",
+          "severity": "HIGH",
+          "title": "Potential preprocessing data leakage",
+          "fit_line": 1,
+          "split_line": 2,
+          "dataset": "X",
+          "split_input": "X",
+          "evidence": "scaler.fit_transform(X) appears before train_test_split(X)",
+          "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+        },
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "fit_transform 回写同一变量 X，再 split；应检出。"
+    },
+    {
+      "id": "SG001-G2-04",
+      "group": "leak",
+      "expected": {
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "throws": false
+      },
+      "expected_status": "POTENTIAL_RISK",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "first_finding": {
+          "rule_id": "SG001",
+          "severity": "HIGH",
+          "title": "Potential preprocessing data leakage",
+          "fit_line": 1,
+          "split_line": 4,
+          "dataset": "X",
+          "split_input": "X",
+          "evidence": "scaler.fit(X) appears before train_test_split(X)",
+          "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+        },
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "多行展开的调用，检查器需支持跨行；应检出。"
+    },
+    {
+      "id": "SG001-G2-05",
+      "group": "leak",
+      "expected": {
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "throws": false
+      },
+      "expected_status": "POTENTIAL_RISK",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": 1,
+        "first_finding": {
+          "rule_id": "SG001",
+          "severity": "HIGH",
+          "title": "Potential preprocessing data leakage",
+          "fit_line": 1,
+          "split_line": 2,
+          "dataset": "X",
+          "split_input": "X",
+          "evidence": "scaler.fit_transform(X) appears before train_test_split(X)",
+          "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+        },
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "解包赋值后 split；检查器按赋值目标识别 output，应检出。"
+    },
+    {
+      "id": "SG001-G3-01",
+      "group": "negative",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "泄漏代码出现在注释中，检查器应忽略注释；不应报警。"
+    },
+    {
+      "id": "SG001-G3-02",
+      "group": "negative",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "示例代码被字符串字面量包裹，掩码后不参与匹配；不应报警。"
+    },
+    {
+      "id": "SG001-G3-03",
+      "group": "negative",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "docstring 内的示例，掩码后不匹配；不应报警。"
+    },
+    {
+      "id": "SG001-G3-04",
+      "group": "negative",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "fit(A) 与 split(B) 涉及互不相关的数据集，检查器按变量名判定不构成泄漏；不应报警。"
+    },
+    {
+      "id": "SG001-G3-05",
+      "group": "negative",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "split 在前，fit 只作用于 X_train；顺序正确，不应报警。"
+    },
+    {
+      "id": "SG001-G4-01",
+      "group": "abnormal",
+      "expected": {
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "throws": true,
+        "throwsType": "TypeError"
+      },
+      "expected_status": null,
+      "expected_throws": true,
+      "actual": {
+        "threw": true,
+        "throwType": "TypeError",
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "first_finding": null,
+        "limitations": null,
+        "version": null,
+        "error_message": "code must be non-empty Python text, at most 32768 characters"
+      },
+      "passed": true,
+      "checks": {
+        "throws": true,
+        "throwType": true
+      },
+      "rationale": "空字符串被明确拒绝，应抛 TypeError（抛错类异常）。"
+    },
+    {
+      "id": "SG001-G4-02",
+      "group": "abnormal",
+      "expected": {
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "throws": true,
+        "throwsType": "TypeError"
+      },
+      "expected_status": null,
+      "expected_throws": true,
+      "actual": {
+        "threw": true,
+        "throwType": "TypeError",
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "first_finding": null,
+        "limitations": null,
+        "version": null,
+        "error_message": "code must be non-empty Python text, at most 32768 characters"
+      },
+      "passed": true,
+      "checks": {
+        "throws": true,
+        "throwType": true
+      },
+      "rationale": "纯空白文本视为空输入，应抛 TypeError（抛错类异常）。"
+    },
+    {
+      "id": "SG001-G4-03",
+      "group": "abnormal",
+      "expected": {
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "throws": true,
+        "throwsType": "TypeError"
+      },
+      "expected_status": null,
+      "expected_throws": true,
+      "actual": {
+        "threw": true,
+        "throwType": "TypeError",
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "first_finding": null,
+        "limitations": null,
+        "version": null,
+        "error_message": "code must be non-empty Python text, at most 32768 characters"
+      },
+      "passed": true,
+      "checks": {
+        "throws": true,
+        "throwType": true
+      },
+      "rationale": "非字符串输入应抛 TypeError（抛错类异常）。"
+    },
+    {
+      "id": "SG001-G4-04",
+      "group": "abnormal",
+      "expected": {
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "throws": true,
+        "throwsType": "TypeError"
+      },
+      "expected_status": null,
+      "expected_throws": true,
+      "actual": {
+        "threw": true,
+        "throwType": "TypeError",
+        "status": null,
+        "review_required": null,
+        "findings": null,
+        "first_finding": null,
+        "limitations": null,
+        "version": null,
+        "error_message": "code must be non-empty Python text, at most 32768 characters"
+      },
+      "passed": true,
+      "checks": {
+        "throws": true,
+        "throwType": true
+      },
+      "rationale": "超过 32768 字符上限，应抛 TypeError（抛错类异常）。"
+    },
+    {
+      "id": "SG001-G4-05",
+      "group": "abnormal",
+      "expected": {
+        "status": "NO_PATTERN_FOUND",
+        "review_required": true,
+        "findings": 0,
+        "throws": false
+      },
+      "expected_status": "NO_PATTERN_FOUND",
+      "expected_throws": false,
+      "actual": {
+        "threw": false,
+        "throwType": null,
+        "status": "NO_PATTERN_FOUND",
+        "review_required": true,
+        "findings": 0,
+        "first_finding": null,
+        "limitations": [
+          "Heuristic text analysis, not Python parsing or full data-flow analysis.",
+          "Assumes straight-line code and sklearn-style fit/fit_transform/train_test_split calls.",
+          "Does not resolve imports, branches, loops, variable reassignments, aliases, or cross-function flow; findings require review.",
+          "No finding does not prove absence of leakage or correctness of the experiment.",
+          "This tool does not execute code or automatically block other tools.",
+          "An unterminated string was detected; analysis may be incomplete."
+        ],
+        "version": "0.2.1"
+      },
+      "passed": true,
+      "checks": {
+        "status": true,
+        "review_required": true,
+        "findings": true
+      },
+      "rationale": "未闭合字符串不抛错，返回 review_required=true 提示需人工复核（复核类异常）。"
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "verified_on": "2026-10-14",
+  "scope": "Text checker and direct simulated hook only. No Python execution, model API, AGH host dispatch, or new webpage session.",
+  "total": 8,
+  "passed": 8,
+  "results": [
+    {
+      "id": "normal",
+      "category": "normal",
+      "input": "X_train, X_test, y_train, y_test = train_test_split(X, y)\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)",
+      "actual": {
+        "version": "0.2.1",
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": []
+      },
+      "hook": {
+        "allow": true
+      },
+      "passed": true
+    },
+    {
+      "id": "limit_32768",
+      "category": "boundary",
+      "input": {
+        "character": "x",
+        "length": 32768
+      },
+      "actual": {
+        "version": "0.2.1",
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": []
+      },
+      "hook": {
+        "allow": true
+      },
+      "passed": true
+    },
+    {
+      "id": "over_32769",
+      "category": "boundary",
+      "input": {
+        "character": "x",
+        "length": 32769
+      },
+      "actual": {
+        "error": "TypeError"
+      },
+      "hook": {
+        "allow": false,
+        "reason": "SciGuard blocked run_code: pre-flight check failed; supply analyzable Python text of at most 32768 characters."
+      },
+      "passed": true
+    },
+    {
+      "id": "unterminated",
+      "category": "boundary",
+      "input": "example = \"unfinished",
+      "actual": {
+        "version": "0.2.1",
+        "status": "NO_PATTERN_FOUND",
+        "review_required": true,
+        "findings": []
+      },
+      "hook": {
+        "allow": false,
+        "reason": "SciGuard blocked run_code: pre-flight analysis is incomplete or requires review."
+      },
+      "passed": true
+    },
+    {
+      "id": "comment",
+      "category": "boundary",
+      "input": "# scaler.fit(X)\ntrain_test_split(X)",
+      "actual": {
+        "version": "0.2.1",
+        "status": "NO_PATTERN_FOUND",
+        "review_required": false,
+        "findings": []
+      },
+      "hook": {
+        "allow": true
+      },
+      "passed": true
+    },
+    {
+      "id": "risky",
+      "category": "failure",
+      "input": "X_scaled = scaler.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X_scaled, y)",
+      "actual": {
+        "version": "0.2.1",
+        "status": "POTENTIAL_RISK",
+        "review_required": true,
+        "findings": [
+          {
+            "rule_id": "SG001",
+            "severity": "HIGH",
+            "title": "Potential preprocessing data leakage",
+            "fit_line": 1,
+            "split_line": 2,
+            "dataset": "X",
+            "split_input": "X_scaled",
+            "evidence": "scaler.fit_transform(X) appears before train_test_split(X_scaled)",
+            "suggestion": "Split first; fit preprocessing on X_train only, then transform X_test. For cross-validation, fit preprocessing inside each fold using a Pipeline."
+          }
+        ]
+      },
+      "hook": {
+        "allow": false,
+        "reason": "SciGuard blocked run_code: SG001 potential preprocessing data leakage at fit_line=1, split_line=2. Split first; fit preprocessing on training data only."
+      },
+      "passed": true
+    },
+    {
+      "id": "empty",
+      "category": "failure",
+      "input": "",
+      "actual": {
+        "error": "TypeError"
+      },
+      "hook": {
+        "allow": false,
+        "reason": "SciGuard blocked run_code: code must be non-empty Python text."
+      },
+      "passed": true
+    },
+    {
+      "id": "non_string",
+      "category": "failure",
+      "input": 42,
+      "actual": {
+        "error": "TypeError"
+      },
+      "hook": {
+        "allow": false,
+        "reason": "SciGuard blocked run_code: code must be non-empty Python text."
+      },
+      "passed": true
+    }
+  ]
+}

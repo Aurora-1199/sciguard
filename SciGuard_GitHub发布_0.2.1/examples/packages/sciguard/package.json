@@ -1,0 +1,13 @@
+{
+  "name": "@sciguard/scientific-check",
+  "version": "0.2.1",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": "./index.mjs",
+  "agnes": {
+    "plugins": [
+      { "export": "sciGuard", "id": "ext:sciguard/scientific-check", "inject": ["extension"] }
+    ]
+  }
+}
